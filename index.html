@@ -95,21 +95,23 @@
     <section id="quote" class="py-20 px-6 max-w-2xl mx-auto">
         <div class="bg-white p-8 md:p-12 rounded-3xl shadow-xl border border-slate-100">
             <h2 class="text-3xl font-bold mb-6 text-center">Get Your Free Quote</h2>
-            <form id="contactForm" onsubmit="handleFormSubmit(event)" class="space-y-6">
+            
+            <form id="contactForm" action="https://formspree.io/f/xlgygrjq" method="POST" onsubmit="handleFormSubmit(event)" class="space-y-6">
                 <div class="grid md:grid-cols-2 gap-6">
-                    <input type="text" placeholder="Your Name" required class="w-full p-4 rounded-lg border border-slate-200 focus:ring-2 focus:ring-black outline-none">
-                    <input type="text" placeholder="Phone Number or Email" required class="w-full p-4 rounded-lg border border-slate-200 focus:ring-2 focus:ring-black outline-none">
+                    <input type="text" name="name" placeholder="Your Name" required class="w-full p-4 rounded-lg border border-slate-200 focus:ring-2 focus:ring-black outline-none">
+                    <input type="text" name="contact" placeholder="Phone Number or Email" required class="w-full p-4 rounded-lg border border-slate-200 focus:ring-2 focus:ring-black outline-none">
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-2">What are we moving?</label>
-                    <textarea required placeholder="Briefly describe your items (e.g., 3-seater sofa, outdoor grill, piano...)" class="w-full p-4 rounded-lg border border-slate-200 focus:ring-2 focus:ring-black outline-none"></textarea>
+                    <textarea name="description" required placeholder="Briefly describe your items (e.g., 3-seater sofa, outdoor grill, piano...)" class="w-full p-4 rounded-lg border border-slate-200 focus:ring-2 focus:ring-black outline-none"></textarea>
                 </div>
                 <div class="grid md:grid-cols-2 gap-6">
-                    <input type="text" placeholder="From (City/Zip)" required class="w-full p-4 rounded-lg border border-slate-200 focus:ring-2 focus:ring-black outline-none">
-                    <input type="text" placeholder="To (City/Zip)" required class="w-full p-4 rounded-lg border border-slate-200 focus:ring-2 focus:ring-black outline-none">
+                    <input type="text" name="pickup" placeholder="From (City/Zip)" required class="w-full p-4 rounded-lg border border-slate-200 focus:ring-2 focus:ring-black outline-none">
+                    <input type="text" name="destination" placeholder="To (City/Zip)" required class="w-full p-4 rounded-lg border border-slate-200 focus:ring-2 focus:ring-black outline-none">
                 </div>
-                <button type="submit" class="w-full bg-black text-white py-4 rounded-lg font-bold hover:bg-slate-800 transition">Get Estimate</button>
+                <button type="submit" id="submitBtn" class="w-full bg-black text-white py-4 rounded-lg font-bold hover:bg-slate-800 transition">Get Estimate</button>
             </form>
+            
             <div id="successMessage" class="hidden text-center mt-6 p-4 bg-slate-100 text-slate-800 rounded-lg font-medium">
                 Thank you! We've received your details and will get back to you shortly.
             </div>
@@ -117,16 +119,39 @@
     </section>
 
     <script>
-        function handleFormSubmit(event) {
+        async function handleFormSubmit(event) {
             event.preventDefault();
-            const form = document.getElementById('contactForm');
+            const form = event.target;
+            const btn = document.getElementById('submitBtn');
             const success = document.getElementById('successMessage');
             
-            form.style.opacity = '0';
-            setTimeout(() => {
-                form.classList.add('hidden');
-                success.classList.remove('hidden');
-            }, 300);
+            btn.disabled = true;
+            btn.innerText = 'Sending...';
+
+            try {
+                const data = new FormData(form);
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: data,
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (response.ok) {
+                    form.style.opacity = '0';
+                    setTimeout(() => {
+                        form.classList.add('hidden');
+                        success.classList.remove('hidden');
+                    }, 500);
+                } else {
+                    alert('Submission failed. Please try again.');
+                    btn.disabled = false;
+                    btn.innerText = 'Get Estimate';
+                }
+            } catch (error) {
+                alert('Submission error. Please check your connection.');
+                btn.disabled = false;
+                btn.innerText = 'Get Estimate';
+            }
         }
 
         // Smooth scroll implementation
